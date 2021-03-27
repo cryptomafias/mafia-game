@@ -30,7 +30,7 @@ const schema = yup.object().shape({
 });
 
 
-function Login() {
+function Login({updateFormType}) {
     const {identity, setIdentity} = useContext(UserContext)
     const history = useHistory()
     const location = useLocation()
@@ -46,7 +46,11 @@ function Login() {
         const {password} = values
         try {
             const newIdentity = await generatePrivateKey(password)
-            createNotification("success", "Signed In", `You are now signed in with the public key: ${newIdentity.public.toString()}`)
+            createNotification(
+                "success",
+                "Signed In",
+                `You are now signed in with the public key: ${newIdentity.public.toString()}`
+            )
             setIdentity(newIdentity)
             setSubmitting(false)
         } catch (err) {
@@ -82,7 +86,7 @@ function Login() {
                                 _hover={{
                                     bg: 'blue.500',
                                 }}>
-                                Sign in
+                                Sign In
                             </Button>
                             <Stack
                                 fontSize="md"
@@ -90,7 +94,7 @@ function Login() {
                                 align={'start'}
                                 justify={'space-between'}>
                                 <Text>Don't have an account?</Text>
-                                <Link color={'blue.400'}>Sign Up</Link>
+                                <Link color={'blue.400'} onClick={() => {updateFormType("SignUp")}}>Sign Up</Link>
                             </Stack>
                         </Stack>
                     </Stack>
