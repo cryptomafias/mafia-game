@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Box, Grid, useColorModeValue,} from '@chakra-ui/react';
 import {ColorModeSwitcher} from './ColorModeSwitcher';
-import Auth from "./components/auth";
+import Router from "./components/router";
 
 export const UserContext = React.createContext(null)
 
@@ -12,7 +12,7 @@ function App() {
             <Grid minH="100vh" p={3}>
                 <ColorModeSwitcher justifySelf="flex-end"/>
                 <UserContext.Provider value={{identity, setIdentity}}>
-                    <Auth/>
+                    <Router/>
                 </UserContext.Provider>
             </Grid>
         </Box>

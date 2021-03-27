@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from 'react'
+import React, {useContext} from 'react'
 
 import {Field, Form, Formik} from 'formik';
 import * as yup from 'yup'
@@ -14,33 +14,26 @@ import {
     Stack,
     Text
 } from "@chakra-ui/react"
-import {LockIcon} from '@chakra-ui/icons'
+import {LockIcon, Icon} from '@chakra-ui/icons'
 
 import {createNotification} from "../notification"
 import {UserContext} from "../../App";
 import {generatePrivateKey} from "./utils";
-import {useHistory, useLocation} from "react-router-dom";
+import {FaUser} from "react-icons/all";
 
 const initialState = {
+    username: '',
     password: '',
 }
 
 const schema = yup.object().shape({
+    username: yup.string().required("Username is required"),
     password: yup.string().required("Password is required")
 });
 
 
-function Login({updateFormType}) {
+function SignUp({updateFormType}) {
     const {identity, setIdentity} = useContext(UserContext)
-    const history = useHistory()
-    const location = useLocation()
-    const {from} = location.state || {from: {pathname: "/"}};
-
-    useEffect(() => {
-        if (identity) {
-            history.replace(from)
-        }
-    }, [identity])
 
     const onSubmit = async (values, {setSubmitting}) => {
         const {password} = values
@@ -62,6 +55,21 @@ function Login({updateFormType}) {
             {(props) => (
                 <Form>
                     <Stack spacing={4}>
+                        <Field name="username">
+                            {({field, form}) => (
+                                <FormControl isInvalid={form.errors.username && form.touched.username}>
+                                    <FormLabel htmlFor="username">Username</FormLabel>
+                                    <InputGroup>
+                                        <InputLeftElement
+                                            pointerEvents="none"
+                                            children={<Icon as={FaUser} color="gray.300" />}
+                                        />
+                                        <Input {...field} id="username" placeholder="username"/>
+                                    </InputGroup>
+                                    <FormErrorMessage>{form.errors.username}</FormErrorMessage>
+                                </FormControl>
+                            )}
+                        </Field>
                         <Field name="password">
                             {({field, form}) => (
                                 <FormControl isInvalid={form.errors.password && form.touched.password}>
@@ -73,7 +81,7 @@ function Login({updateFormType}) {
                                         />
                                         <Input {...field} id="password" placeholder="password" type="password"/>
                                     </InputGroup>
-                                    <FormErrorMessage>{form.errors.name}</FormErrorMessage>
+                                    <FormErrorMessage>{form.errors.password}</FormErrorMessage>
                                 </FormControl>
                             )}
                         </Field>
@@ -86,15 +94,15 @@ function Login({updateFormType}) {
                                 _hover={{
                                     bg: 'blue.500',
                                 }}>
-                                Sign In
+                                Sign Up
                             </Button>
                             <Stack
                                 fontSize="md"
                                 direction={{ base: 'column', sm: 'row' }}
                                 align={'start'}
                                 justify={'space-between'}>
-                                <Text>Don't have an account?</Text>
-                                <Link color={'blue.400'} onClick={() => {updateFormType("SignUp")}}>Sign Up</Link>
+                                <Text>Already have an account?</Text>
+                                <Link color={'blue.400'} onClick={() => {updateFormType("SignIn")}}>Login</Link>
                             </Stack>
                         </Stack>
                     </Stack>
@@ -104,4 +112,4 @@ function Login({updateFormType}) {
     )
 }
 
-export default Login
+export default SignUp

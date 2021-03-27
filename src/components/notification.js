@@ -1,15 +1,13 @@
-import React from "react"
 import {createStandaloneToast} from "@chakra-ui/react";
 
-function createNotification(){
+export const createNotification = (status, title, description) => {
     const toast = createStandaloneToast()
     toast({
-        title: "An error occurred.",
-        description: "Unable to create user account.",
-        status: "error",
+        title: title,
+        description: description,
+        status: status,
         duration: 9000,
         isClosable: true,
+        position: "bottom-right"
     })
 }
-
-export {createNotification}
