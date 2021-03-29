@@ -1,5 +1,9 @@
 import {BigNumber, providers, utils} from "ethers";
-import {PrivateKey} from "@textile/hub";
+import {PrivateKey, Client, Users, Buckets} from "@textile/hub";
+import {keccak256} from "ethers/lib/utils";
+import toBuffer from "it-to-buffer";
+
+const KEY = {key: 'bwkrt36qlemdl2zfvgkp6dthvjy'}
 
 const generateMessageForEntropy = (ethereum_address, application_name, secret) => (
     '******************************************************************************** \n' +
@@ -37,7 +41,7 @@ const generateMessageForEntropy = (ethereum_address, application_name, secret) =
     '******************************************************************************** \n'
 )
 
-const getSigner = async () => {
+const getSignerAndProvider = async () => {
     if (!window.ethereum) {
         throw new Error(
             'Ethereum is not connected. Please download Metamask from https://metamask.io/download.html'
@@ -47,11 +51,11 @@ const getSigner = async () => {
     console.debug('Initializing web3 provider...');
     const provider = new providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    return signer
+    return {provider, signer}
 }
 
-const getAddressAndSigner = async () => {
-    const signer = await getSigner()
+export const getMetamask = async () => {
+    const {signer, provider} = await getSignerAndProvider()
     // @ts-ignore
     const accounts = await window.ethereum.request({method: 'eth_requestAccounts'});
     if (accounts.length === 0) {
@@ -60,11 +64,10 @@ const getAddressAndSigner = async () => {
 
     const address = accounts[0];
 
-    return {address, signer}
+    return {address, provider, signer}
 }
 
-export const generatePrivateKey = async (password) => {
-    const metamask = await getAddressAndSigner()
+export const generatePrivateKey = async (metamask, password) => {
     // avoid sending the raw secret by hashing it first
     const secret = password
     const message = generateMessageForEntropy(metamask.address, 'Notes', secret)
@@ -90,4 +93,58 @@ export const generatePrivateKey = async (password) => {
 
     // Your app can now use this identity for generating a user Mailbox, Threads, Buckets, etc
     return identity
+}
+
+async function initClient(identity){
+    const client = await Client.withKeyInfo(KEY)
+    await client.getToken(identity)
+    return client
+}
+
+async function initUsers(identity){
+    const users = await Users.withKeyInfo(KEY)
+    await users.getToken(identity)
+    return users
+}
+
+async function initBuckets(identity){
+    const buckets = await Buckets.withKeyInfo(KEY)
+    await buckets.getToken(identity)
+    return buckets
+}
+
+export async function getHub(identity) {
+    if(identity){
+        const client = await initClient(identity)
+        const users = await initUsers(identity)
+        const buckets = await initBuckets(identity)
+        const hub = {
+            client,
+            users,
+            buckets
+        }
+        return hub
+    }
+    return {}
+}
+
+export function identityToAccountId(identity){
+    const pubKey = identity.public.bytes
+    return BigNumber.from(keccak256(pubKey))
+}
+
+export const pushFile = async (buckets, name, data, bucketKey) => {
+    const content = JSON.stringify(data)
+    const file = { path: `/${name}.json`, content: Buffer.from(content) }
+    await buckets.pushPath(bucketKey, `/${name}.json`, file)
+}
+
+export const pullFile = async (buckets, path, key) => {
+    const buf = await toBuffer(buckets.pullPath(key, path))
+    return JSON.parse(Buffer.from(buf).toString("utf-8"))
+}
+
+export const getIpnsLink = async (buckets, bucketKey) => {
+    const links = await buckets.links(bucketKey)
+    return links.ipns
 }

@@ -1,9 +1,9 @@
 import React, {useContext} from "react";
 import {Redirect, Route} from "react-router-dom";
-import {UserContext} from "../App";
+import {IdentityContext} from "../App";
 
 function ProtectedRoute({children, ...rest}) {
-    const {identity} = useContext(UserContext)
+    const {identity} = useContext(IdentityContext)
     return (
         <Route
             {...rest}
