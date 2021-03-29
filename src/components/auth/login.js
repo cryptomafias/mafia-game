@@ -17,9 +17,10 @@ import {
 import {LockIcon} from '@chakra-ui/icons'
 
 import {createNotification} from "../notification"
-import {UserContext} from "../../App";
-import {generatePrivateKey} from "./utils";
+import {IdentityContext, MetamaskContext, UserContext} from "../../App";
+import {generatePrivateKey, getHub, identityToAccountId, pullFile} from "../utils";
 import {useHistory, useLocation} from "react-router-dom";
+import {getGptContract} from "../../contracts/accounts";
 
 const initialState = {
     password: '',
@@ -31,7 +32,10 @@ const schema = yup.object().shape({
 
 
 function Login({updateFormType}) {
-    const {identity, setIdentity} = useContext(UserContext)
+    const {setUser} = useContext(UserContext)
+    const {identity, setIdentity} = useContext(IdentityContext)
+    const metamask = useContext(MetamaskContext)
+    const {gptContract} = getGptContract(metamask.provider, metamask.signer)
     const history = useHistory()
     const location = useLocation()
     const {from} = location.state || {from: {pathname: "/"}};
@@ -40,20 +44,33 @@ function Login({updateFormType}) {
         if (identity) {
             history.replace(from)
         }
-    }, [identity])
+    }, [identity, from, history])
 
     const onSubmit = async (values, {setSubmitting}) => {
         const {password} = values
         try {
-            const newIdentity = await generatePrivateKey(password)
+            const newIdentity = await generatePrivateKey(metamask, password)
+            const accountId = identityToAccountId(newIdentity)
+            console.log(accountId)
+            const gptURI = await gptContract.signIn(accountId)
+            console.log(gptURI)
+            const hub = await getHub(newIdentity)
+            const buck = await hub.buckets.getOrCreate('profiles')
+            const userData = await pullFile(
+                hub.buckets,
+                `${newIdentity.public.toString()}.json`,
+                buck.root.key
+            )
+            setUser(userData)
             createNotification(
                 "success",
                 "Signed In",
                 `You are now signed in with the public key: ${newIdentity.public.toString()}`
             )
-            setIdentity(newIdentity)
             setSubmitting(false)
+            setIdentity(newIdentity)
         } catch (err) {
+            console.log(err)
             createNotification("error", err.name, err.message)
         }
     }
@@ -73,7 +90,7 @@ function Login({updateFormType}) {
                                         />
                                         <Input {...field} id="password" placeholder="password" type="password"/>
                                     </InputGroup>
-                                    <FormErrorMessage>{form.errors.name}</FormErrorMessage>
+                                    <FormErrorMessage>{form.errors.password}</FormErrorMessage>
                                 </FormControl>
                             )}
                         </Field>
