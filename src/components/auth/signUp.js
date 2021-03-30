@@ -1,4 +1,4 @@
-import React, {useContext} from 'react'
+import React, {useContext, useEffect} from 'react'
 
 import {Field, Form, Formik} from 'formik';
 import * as yup from 'yup'
@@ -14,12 +14,14 @@ import {
     Stack,
     Text
 } from "@chakra-ui/react"
-import {LockIcon, Icon} from '@chakra-ui/icons'
+import {Icon, LockIcon} from '@chakra-ui/icons'
 
 import {createNotification} from "../notification"
-import {UserContext} from "../../App";
-import {generatePrivateKey} from "./utils";
+import {IdentityContext, MetamaskContext, UserContext} from "../../App";
+import {generatePrivateKey, getHub, getIpnsLink, identityToAccountId, pushFile} from "../utils";
 import {FaUser} from "react-icons/all";
+import {getGptContract} from "../../contracts/accounts";
+import {useHistory, useLocation} from "react-router-dom";
 
 const initialState = {
     username: '',
@@ -33,21 +35,59 @@ const schema = yup.object().shape({
 
 
 function SignUp({updateFormType}) {
-    const {identity, setIdentity} = useContext(UserContext)
+    const {setUser} = useContext(UserContext)
+    const {identity, setIdentity} = useContext(IdentityContext)
+    const metamask = useContext(MetamaskContext)
+    const {gptSigner} = getGptContract(metamask.provider, metamask.signer)
+    const history = useHistory()
+    const location = useLocation()
+    const {from} = location.state || {from: {pathname: "/"}};
+
+    useEffect(() => {
+        if (identity) {
+            history.replace(from)
+        }
+    }, [identity, from, history])
 
     const onSubmit = async (values, {setSubmitting}) => {
-        const {password} = values
+        const {username, password} = values
         try {
-            const newIdentity = await generatePrivateKey(password)
+            const newIdentity = await generatePrivateKey(metamask, password)
+            const hub = await getHub(newIdentity)
+            console.log(hub)
+            const buck = await hub.buckets.getOrCreate('profiles')
+            console.log(buck)
+            const userData = {
+                name: username,
+            }
+            await pushFile(
+                hub.buckets,
+                newIdentity.public.toString(),
+                userData,
+                buck.root.key
+            )
+            console.log("file")
+            const ipnsLink = await getIpnsLink(hub.buckets, buck.root.key)
+            console.log(ipnsLink)
+            const accountId = identityToAccountId(newIdentity)
+            await gptSigner.signUp(`${ipnsLink}/${newIdentity.public.toString()}.json`, accountId)
+            createNotification(
+                "success",
+                "Signed Up",
+                `Your new account has been created with the public key: ${newIdentity.public.toString()}`
+            )
             createNotification(
                 "success",
                 "Signed In",
                 `You are now signed in with the public key: ${newIdentity.public.toString()}`
             )
-            setIdentity(newIdentity)
             setSubmitting(false)
+            setUser(userData)
+            setIdentity(newIdentity)
         } catch (err) {
+            console.error(err)
             createNotification("error", err.name, err.message)
+            throw err
         }
     }
     return (
@@ -62,7 +102,7 @@ function SignUp({updateFormType}) {
                                     <InputGroup>
                                         <InputLeftElement
                                             pointerEvents="none"
-                                            children={<Icon as={FaUser} color="gray.300" />}
+                                            children={<Icon as={FaUser} color="gray.300"/>}
                                         />
                                         <Input {...field} id="username" placeholder="username"/>
                                     </InputGroup>
@@ -77,7 +117,7 @@ function SignUp({updateFormType}) {
                                     <InputGroup>
                                         <InputLeftElement
                                             pointerEvents="none"
-                                            children={<LockIcon color="gray.300" />}
+                                            children={<LockIcon color="gray.300"/>}
                                         />
                                         <Input {...field} id="password" placeholder="password" type="password"/>
                                     </InputGroup>
@@ -98,11 +138,13 @@ function SignUp({updateFormType}) {
                             </Button>
                             <Stack
                                 fontSize="md"
-                                direction={{ base: 'column', sm: 'row' }}
+                                direction={{base: 'column', sm: 'row'}}
                                 align={'start'}
                                 justify={'space-between'}>
                                 <Text>Already have an account?</Text>
-                                <Link color={'blue.400'} onClick={() => {updateFormType("SignIn")}}>Login</Link>
+                                <Link color={'blue.400'} onClick={() => {
+                                    updateFormType("SignIn")
+                                }}>Login</Link>
                             </Stack>
                         </Stack>
                     </Stack>
