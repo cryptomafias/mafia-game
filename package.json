@@ -6,6 +6,8 @@
     "@chakra-ui/icons": "^1.0.7",
     "@chakra-ui/react": "^1.0.0",
     "@chakra-ui/toast": "^1.2.0",
+    "@dicebear/avatars": "^4.5.4",
+    "@dicebear/avatars-avataaars-sprites": "^4.5.4",
     "@emotion/react": "^11.0.0",
     "@emotion/styled": "^11.0.0",
     "@testing-library/jest-dom": "^5.9.0",
