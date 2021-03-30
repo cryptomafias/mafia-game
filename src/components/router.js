@@ -2,6 +2,8 @@ import {BrowserRouter, Redirect, Route, Switch} from "react-router-dom";
 import React from 'react'
 import ProtectedRoute from "./protectedRoute";
 import Auth from "./auth";
+import Home from "./home";
+import Profile from "./profile";
 
 function Router(props) {
     return (
@@ -11,7 +13,10 @@ function Router(props) {
                     <Redirect to="/home"/>
                 </ProtectedRoute>
                 <ProtectedRoute exact path="/home">
-                    <h1>Hello World</h1>
+                    <Home />
+                </ProtectedRoute>
+                <ProtectedRoute exact path="/profile">
+                    <Profile />
                 </ProtectedRoute>
                 <Route exact path="/login">
                     <Auth currentForm="SignIn"/>
