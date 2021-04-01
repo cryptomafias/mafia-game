@@ -1,19 +1,24 @@
 import PlayerCard from "./game/playerCard"
-import {SimpleGrid} from '@chakra-ui/react'
+import {SimpleGrid,Text,Heading,VStack} from '@chakra-ui/react'
 const Game = () => {
     return (
         <>
-            {/* <h1 border="1px" borderColor="black">Game Page</h1> */}
-            <SimpleGrid columns={4} spacing={5} border="1px" borderColor="black">
-            <PlayerCard name='Akash'/>
-            <PlayerCard name='Akash'/>
-            <PlayerCard name='Akash'/>
-            <PlayerCard name='Akash'/>
-            <PlayerCard name='Akash'/>
-            <PlayerCard name='Akash'/>
-            <PlayerCard name='Akash'/>
-            <PlayerCard name='Akash'/>
+            <VStack p={4}>
+            <Heading mb='8'>Game Page</Heading>
+            <SimpleGrid columns={4} spacing={5} 
+            
+            >
+            <PlayerCard name='Akash' number='1'/>
+            <PlayerCard name='Akash' number='1'/>
+            <PlayerCard name='Akash' number='1'/>
+            <PlayerCard name='Akash' number='1'/>
+            <PlayerCard name='Akash' number='1'/>
+            <PlayerCard name='Akash' number='1'/>
+            <PlayerCard name='Akash' number='1'/>
+            <PlayerCard name='Akash' number='1'/>
             </SimpleGrid>
+            </VStack>
+            
             
             
             

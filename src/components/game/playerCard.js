@@ -1,23 +1,41 @@
-import {Box,Image,useColorModeValue} from '@chakra-ui/react';
+import {Box,Image,useColorModeValue,useColorMode,Text} from '@chakra-ui/react';
 import Avatar from '../Avatar'
 
-const PlayerCard = ({name}) =>
+const PlayerCard = ({name,number}) =>
 {
+    const {colorMode} = useColorMode();
+    const bgColor = {light:'gray.200',dark:'gray.700'};
+    const textColor = {light:'gray.500',dark:'gray.100'};
     return(
         
         <Box 
-        display='flex'
-        alignItems="center" 
-        w='300px' 
+        w='200px' 
+        h='300px'
         rounded='20px' 
         overflow='hidden' 
-        boxShadow='sm'
-        bg='gray.200'
-        
+        boxShadow='md'
+        bg={bgColor[colorMode]}
+        align = 'center'
         >
-            <Image src={Avatar} alt='User Avatar'/>
+            <Avatar value={name} display='flex' />
             <Box p={5}>
-            <h1>{name}</h1>
+            <Text textTransform='uppercase'
+            fontSize='m'
+            color={textColor[colorMode]}
+            fontWeight = 'medium'
+            letterSpacing='wide'
+            >
+            {name}
+            </Text>
+            <Text textTransform='uppercase'
+            fontSize='xl'
+            color={textColor[colorMode]}
+            fontWeight = 'black'
+            letterSpacing='wide'
+            my='5'
+            >
+            {number}
+            </Text>
             </Box>
         </Box>
         
