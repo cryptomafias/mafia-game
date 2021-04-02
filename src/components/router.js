@@ -24,7 +24,7 @@ function Router(props) {
                 <Route exact path="/signup">
                     <Auth currentForm="SignUp"/>
                 </Route>
-                <Route>
+                <Route exact path='/game'>
                     <Game/>
                 </Route>
             </Switch>
