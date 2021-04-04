@@ -1,13 +1,11 @@
 import {
   Box,
-  Image,
-  useColorModeValue,
   useColorMode,
   Text,
 } from '@chakra-ui/react';
 import Avatar from '../Avatar';
 
-const PlayerCard = ({ name, number }) => {
+const PlayerCard = ({ name, number, role }) => {
   const { colorMode } = useColorMode();
   const bgColor = { light: 'gray.200', dark: 'gray.700' };
   const textColor = { light: 'gray.500', dark: 'gray.100' };
@@ -20,18 +18,10 @@ const PlayerCard = ({ name, number }) => {
       boxShadow="md"
       bg={bgColor[colorMode]}
       align="center"
-    >
-      <Avatar value={name} display="flex" />
+    > <Box pt={5}><Avatar value={name} display="flex"/></Box>
+      
       <Box p={5}>
-        <Text
-          textTransform="uppercase"
-          fontSize="m"
-          color={textColor[colorMode]}
-          fontWeight="medium"
-          letterSpacing="wide"
-        >
-          {name}
-        </Text>
+        
         <Text
           textTransform="uppercase"
           fontSize="xl"
@@ -39,8 +29,19 @@ const PlayerCard = ({ name, number }) => {
           fontWeight="black"
           letterSpacing="wide"
           my="5"
+          isTruncated
         >
-          {number}
+          {number} &bull; {name}
+        </Text>
+        <Text
+          textTransform="uppercase"
+          fontSize="xl"
+          color={textColor[colorMode]}
+          fontWeight="medium"
+          letterSpacing="wide"
+          my="5"
+        >
+          {role}
         </Text>
       </Box>
     </Box>
