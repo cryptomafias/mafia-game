@@ -4,8 +4,13 @@ import {
     useColorMode,
     Text,
     Heading,
-    Input
+    InputGroup,
+    Input,
+    HStack,
+    VStack,
+    InputRightAddon
   } from '@chakra-ui/react';
+
 
 const GameChat = () => {
     const [name, setName] = useState('');
@@ -15,19 +20,38 @@ const GameChat = () => {
     const textColor = { light: 'gray.500', dark: 'gray.100' };
     return (
         
-        // <div className="joinOuterContainer">
-        //     <div className="joinInnerContainer">
-            <Box width='full'
-            bg={bgColor[colorMode]}
-            >
-            <Heading>Chat</Heading>
-            <Input
-            isFullWidth/>
-            </Box>
-        //     </div>
-
+        
             
-        // </div>
+            <VStack>
+            <Heading>Chat</Heading>
+            <Box 
+            w="850px"
+            maxH="170px"
+            rounded="5px"
+            overflow="hidden"
+            boxShadow="md"
+            bg={'white'}
+            align="left"
+            pl={5}
+            overflowY='scroll'>
+            <Text>YO</Text>
+            <Text>YO</Text>
+            <Text>YO</Text>
+            <Text>YO</Text>
+            <Text>YO</Text>
+            <Text>YO</Text>
+            <Text>YO</Text>
+            <Text>YO</Text><Text>YO</Text>
+            </Box>
+            <InputGroup width='full'>
+            <Input bgColor='white'/>
+            <InputRightAddon as='button' children='SEND'/>
+            </InputGroup> 
+            </VStack>
+            
+            
+            
+       
     )
 }
 
