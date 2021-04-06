@@ -107,7 +107,7 @@ async function initUsers(identity){
     return users
 }
 
-async function initBuckets(identity){
+export async function initBuckets(identity){
     const buckets = await Buckets.withKeyInfo(KEY)
     await buckets.getToken(identity)
     return buckets

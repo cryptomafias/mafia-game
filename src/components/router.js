@@ -4,6 +4,7 @@ import ProtectedRoute from "./protectedRoute";
 import Auth from "./auth";
 import Home from "./home";
 import Profile from "./profile";
+import Room from "./room";
 
 function Router(props) {
     return (
@@ -17,6 +18,9 @@ function Router(props) {
                 </ProtectedRoute>
                 <ProtectedRoute exact path="/profile">
                     <Profile />
+                </ProtectedRoute>
+                <ProtectedRoute exact path="/room">
+                    <Room/>
                 </ProtectedRoute>
                 <Route exact path="/login">
                     <Auth currentForm="SignIn"/>
