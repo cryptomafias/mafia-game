@@ -4,7 +4,7 @@ import ProtectedRoute from "./protectedRoute";
 import Auth from "./auth";
 import Home from "./home";
 import Profile from "./profile";
-
+import Game from "./game"
 function Router(props) {
     return (
         <BrowserRouter>
@@ -23,6 +23,9 @@ function Router(props) {
                 </Route>
                 <Route exact path="/signup">
                     <Auth currentForm="SignUp"/>
+                </Route>
+                <Route exact path='/game'>
+                    <Game/>
                 </Route>
             </Switch>
             {props.children}
