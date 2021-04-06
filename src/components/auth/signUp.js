@@ -18,7 +18,7 @@ import {Icon, LockIcon} from '@chakra-ui/icons'
 
 import {createNotification} from "../notification"
 import {IdentityContext, MetamaskContext, UserContext} from "../../App";
-import {generatePrivateKey, getHub, getIpnsLink, identityToAccountId, pushFile} from "../utils";
+import {generatePrivateKey, initBuckets, getIpnsLink, identityToAccountId, pushFile} from "../utils";
 import {FaUser} from "react-icons/all";
 import {getGptContract} from "../../contracts/accounts";
 import {useHistory, useLocation} from "react-router-dom";
@@ -53,21 +53,20 @@ function SignUp({updateFormType}) {
         const {username, password} = values
         try {
             const newIdentity = await generatePrivateKey(metamask, password)
-            const hub = await getHub(newIdentity)
-            console.log(hub)
-            const buck = await hub.buckets.getOrCreate('profiles')
+            const buckets = await initBuckets(newIdentity)
+            const buck = await buckets.getOrCreate('profiles')
             console.log(buck)
             const userData = {
                 name: username,
             }
             await pushFile(
-                hub.buckets,
+                buckets,
                 newIdentity.public.toString(),
                 userData,
                 buck.root.key
             )
             console.log("file")
-            const ipnsLink = await getIpnsLink(hub.buckets, buck.root.key)
+            const ipnsLink = await getIpnsLink(buckets, buck.root.key)
             console.log(ipnsLink)
             const accountId = identityToAccountId(newIdentity)
             await gptSigner.signUp(`${ipnsLink}/${newIdentity.public.toString()}.json`, accountId)

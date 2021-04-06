@@ -13,6 +13,9 @@ function Home() {
                     width="200px"
                     bg={'blue.400'}
                     color={'white'}
+                    onClick={() => {
+                        history.push("/room")
+                    }}
                     _hover={{
                         bg: 'blue.500',
                     }}>
