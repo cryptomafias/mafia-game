@@ -1,57 +1,53 @@
-import {useState} from 'react';
-import {
-    Box,
-    useColorMode,
-    Text,
-    Heading,
-    InputGroup,
-    Input,
-    HStack,
-    VStack,
-    InputRightAddon
-  } from '@chakra-ui/react';
+import {Box, Input, InputGroup, InputRightAddon, Text, useColorModeValue, VStack} from '@chakra-ui/react';
+import {useContext, useEffect} from "react";
+import {HubContext} from "../../App";
+import {ThreadID} from "@textile/hub";
 
+function GameChat({threads}){
+    const hub = useContext(HubContext)
+    // const [messages, setMessages] = useState([])
 
-const GameChat = () => {
-    const [name, setName] = useState('');
-    const [room, setRoom] = useState('');
-    const { colorMode } = useColorMode();
-    const bgColor = { light: 'gray.300', dark: 'gray.700' };
-    const textColor = { light: 'gray.500', dark: 'gray.100' };
+    useEffect(() => {
+        const fetch = async() => {
+            if(hub.hasOwnProperty("client") && threads.hasOwnProperty("villagerThread")){
+                console.log("chats loading")
+                const villagerThread = ThreadID.fromString(threads.villagerThread)
+                const initMessages = await hub.client.find(villagerThread, 'chat', {})
+                console.log(initMessages)
+            }
+        }
+        fetch()
+    }, [hub, threads])
+
     return (
-        
-        
-            
-            <VStack>
-            <Heading>Chat</Heading>
-            <Box 
-            w="850px"
-            maxH="170px"
-            rounded="5px"
-            overflow="hidden"
-            boxShadow="md"
-            bg={'white'}
-            align="left"
-            pl={5}
-            overflowY='scroll'>
-            <Text>YO</Text>
-            <Text>YO</Text>
-            <Text>YO</Text>
-            <Text>YO</Text>
-            <Text>YO</Text>
-            <Text>YO</Text>
-            <Text>YO</Text>
-            <Text>YO</Text><Text>YO</Text>
+        <VStack spacing={2}>
+            <Box
+                w="650px"
+                maxH="170px"
+                rounded="5px"
+                overflow="hidden"
+                boxShadow="md"
+                bg={useColorModeValue('gray.200', 'gray.600')}
+                align="left"
+                pl={2}
+                overflowY='scroll'
+            >
+                <Text fontSize={"md"}>1: Hi</Text>
+                <Text fontSize={"md"}>2: Hello</Text>
+                <Text fontSize={"md"}>1: I am noobie</Text>
+                <Text fontSize={"md"}>1: Please tell me how to play</Text>
+                <Text fontSize={"md"}>2: It's very easy</Text>
+                <Text fontSize={"md"}>2: You will get a role in the beginning</Text>
+                <Text fontSize={"md"}>2: If you are mafia, kill player at Night</Text>
+                <Text fontSize={"md"}>2: If you are detective, inspect a player</Text>
+                <Text fontSize={"md"}>2: If you are doctor, heal someone</Text>
+                <Text fontSize={"md"}>1: Thanks, this sounds fun!</Text>
             </Box>
             <InputGroup width='full'>
-            <Input bgColor='white'/>
-            <InputRightAddon as='button' children='SEND'/>
-            </InputGroup> 
-            </VStack>
-            
-            
-            
-       
+                <Input bg={useColorModeValue('gray.200', 'gray.600')}/>
+                <InputRightAddon as='button' children='SEND'/>
+            </InputGroup>
+        </VStack>
     )
 }
 

@@ -4,7 +4,9 @@ import ProtectedRoute from "./protectedRoute";
 import Auth from "./auth";
 import Home from "./home";
 import Profile from "./profile";
-import Game from "./game"
+import Room from "./room";
+import Game from "./game";
+
 function Router(props) {
     return (
         <BrowserRouter>
@@ -17,6 +19,12 @@ function Router(props) {
                 </ProtectedRoute>
                 <ProtectedRoute exact path="/profile">
                     <Profile />
+                </ProtectedRoute>
+                <ProtectedRoute exact path="/room">
+                    <Room/>
+                </ProtectedRoute>
+                <ProtectedRoute exact path="/room/:roomId">
+                    <Game/>
                 </ProtectedRoute>
                 <Route exact path="/login">
                     <Auth currentForm="SignIn"/>
