@@ -23,6 +23,9 @@ function Router(props) {
                 <ProtectedRoute exact path="/room">
                     <Room/>
                 </ProtectedRoute>
+                <ProtectedRoute exact path="/room/:roomId">
+                    <Game/>
+                </ProtectedRoute>
                 <Route exact path="/login">
                     <Auth currentForm="SignIn"/>
                 </Route>

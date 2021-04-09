@@ -12,6 +12,7 @@ export const IdentityContext = React.createContext(null)
 export const MetamaskContext = React.createContext(null)
 export const HubContext = React.createContext(null)
 export const UserContext = React.createContext(null)
+export const GAME_THREAD = "bafk65mkygxw5aqoxwkbhcktv4yjlyegc376w5ertwfihjftj74t5afa"
 
 function App() {
     const [identity, setIdentity] = useState(null)
