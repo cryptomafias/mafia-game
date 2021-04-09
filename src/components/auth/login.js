@@ -18,7 +18,7 @@ import {LockIcon} from '@chakra-ui/icons'
 
 import {createNotification} from "../notification"
 import {IdentityContext, MetamaskContext, UserContext} from "../../App";
-import {generatePrivateKey, getHub, identityToAccountId, pullFile} from "../utils";
+import {generatePrivateKey, initBuckets, identityToAccountId, pullFile} from "../utils";
 import {useHistory, useLocation} from "react-router-dom";
 import {getGptContract} from "../../contracts/accounts";
 
@@ -54,10 +54,10 @@ function Login({updateFormType}) {
             console.log(accountId)
             const gptURI = await gptContract.signIn(accountId)
             console.log(gptURI)
-            const hub = await getHub(newIdentity)
-            const buck = await hub.buckets.getOrCreate('profiles')
+            const buckets = await initBuckets(newIdentity)
+            const buck = await buckets.getOrCreate('profiles')
             const userData = await pullFile(
-                hub.buckets,
+                buckets,
                 `${newIdentity.public.toString()}.json`,
                 buck.root.key
             )
