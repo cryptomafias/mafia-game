@@ -1,4 +1,4 @@
-import React from "react"
+import React, {useContext} from "react"
 import {
     Button,
     FormControl,
@@ -14,6 +14,8 @@ import Container from "./Container";
 import {Field, Form, Formik} from "formik";
 import * as yup from "yup";
 import {ImEnter} from "react-icons/all";
+import axios from "axios";
+import {IdentityContext} from "../App";
 
 
 const initialState = {
@@ -25,16 +27,27 @@ const schema = yup.object().shape({
 });
 
 function Room() {
+    const {identity} = useContext(IdentityContext)
     const history = useHistory()
-    const onJoinRoom = () => {
+    const onJoinRoom = async (values, {setSubmitting}) => {
+        const response = await axios.put(`http://localhost:5000/rooms/${values.roomId}`, {playerId: identity.toString()})
+        const roomInfo = response.data
+        console.log(roomInfo)
+        setSubmitting(false)
+        history.push(`room/${roomInfo.roomId}`)
     }
-    const onCreateRoom = () => {
+    const onCreateRoom = async (values, {setSubmitting}) => {
+        console.log({playerId: identity.toString()})
+        const response = await axios.post("http://localhost:5000/rooms", {playerId: identity.toString()})
+        const roomInfo = response.data
+        setSubmitting(false)
+        history.push(`/room/${roomInfo.roomId}`)
     }
 
     return (
         <Container>
             <Stack spacing={4}>
-                <Formik initialValues={initialState} onSubmit={onJoinRoom} validationSchema={schema}>
+                <Formik onSubmit={onCreateRoom}>
                     {(props) => (
                         <Form>
                             <Stack spacing={4}>
@@ -43,7 +56,6 @@ function Room() {
                                     type="submit"
                                     bg={'blue.400'}
                                     color={'white'}
-                                    onClick={onCreateRoom}
                                     _hover={{
                                         bg: 'blue.500',
                                     }}>
@@ -77,7 +89,6 @@ function Room() {
                                     type="submit"
                                     bg={'blue.400'}
                                     color={'white'}
-                                    onClick={onJoinRoom}
                                     _hover={{
                                         bg: 'blue.500',
                                     }}>
