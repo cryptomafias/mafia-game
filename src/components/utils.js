@@ -148,3 +148,13 @@ export const getIpnsLink = async (buckets, bucketKey) => {
     const links = await buckets.links(bucketKey)
     return links.ipns
 }
+
+export const debounce = (func, delay) => {
+    let debounceTimer;
+    return function () {
+        const context = this;
+        const args = arguments;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => func.apply(context, args), delay);
+    };
+};
