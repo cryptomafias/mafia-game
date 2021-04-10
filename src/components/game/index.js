@@ -38,10 +38,7 @@ function Game() {
                 const initRoom = await hub.client.findByID(threadId, "rooms", roomId)
                 console.log(initRoom)
                 setRoom(initRoom)
-                setThreads(threads => {
-                    threads.villagerThread = initRoom.villagerThread
-                    return threads
-                })
+                setThreads({villagerThread: initRoom.villagerThread})
                 subRoom = await hub.client.listen(threadId, [{
                         collectionName: "rooms",
                         instanceID: roomId

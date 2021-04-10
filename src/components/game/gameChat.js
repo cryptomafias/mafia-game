@@ -9,7 +9,7 @@ function GameChat({threads}){
 
     useEffect(() => {
         const fetch = async() => {
-            if(hub.hasOwnProperty("client") && threads.hasOwnProperty("villagerThread")){
+            if(hub && hub.hasOwnProperty("client") && threads && threads.hasOwnProperty("villagerThread")){
                 console.log("chats loading")
                 const villagerThread = ThreadID.fromString(threads.villagerThread)
                 const initMessages = await hub.client.find(villagerThread, 'chat', {})
