@@ -18,9 +18,10 @@ import {LockIcon} from '@chakra-ui/icons'
 
 import {createNotification} from "../notification"
 import {IdentityContext, MetamaskContext, UserContext} from "../../App";
-import {generatePrivateKey, identityToAccountId, initBuckets, pullFile} from "../utils";
+import {generatePrivateKey, identityToAccountId} from "../utils";
 import {useHistory, useLocation} from "react-router-dom";
 import {getGptContract} from "../../contracts/accounts";
+import axios from "axios";
 
 const initialState = {
     password: '',
@@ -53,15 +54,8 @@ function Login({updateFormType}) {
             const accountId = identityToAccountId(newIdentity)
             console.log(accountId)
             const gptURI = await gptContract.signIn(accountId)
-            console.log(gptURI)
-            const buckets = await initBuckets(newIdentity)
-            const buck = await buckets.getOrCreate('profiles')
-            const userData = await pullFile(
-                buckets,
-                `${newIdentity.public.toString()}.json`,
-                buck.root.key
-            )
-            setUser(userData)
+            const userData = await axios.get(gptURI)
+            setUser(userData.data)
             createNotification(
                 "success",
                 "Signed In",
