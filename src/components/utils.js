@@ -158,3 +158,20 @@ export const debounce = (func, delay) => {
         debounceTimer = setTimeout(() => func.apply(context, args), delay);
     };
 };
+
+export const debounceByArgs = (func, delay) => {
+    const memory = {};
+
+    return (...args) => {
+        // use first argument as a key
+        // its possible to use all args as a key - e.g JSON.stringify(args) or hash(args)
+        const searchType = JSON.stringify(args);
+
+        if (typeof memory[searchType] === 'function') {
+            return memory[searchType](...args);
+        }
+
+        memory[searchType] = debounce(func, delay); // leading required for return promise
+        return memory[searchType](...args);
+    };
+};
