@@ -18,7 +18,7 @@ import {LockIcon} from '@chakra-ui/icons'
 
 import {createNotification} from "../notification"
 import {IdentityContext, MetamaskContext, UserContext} from "../../App";
-import {generatePrivateKey, initBuckets, identityToAccountId, pullFile} from "../utils";
+import {generatePrivateKey, identityToAccountId, initBuckets, pullFile} from "../utils";
 import {useHistory, useLocation} from "react-router-dom";
 import {getGptContract} from "../../contracts/accounts";
 
@@ -86,7 +86,7 @@ function Login({updateFormType}) {
                                     <InputGroup>
                                         <InputLeftElement
                                             pointerEvents="none"
-                                            children={<LockIcon color="gray.300" />}
+                                            children={<LockIcon color="gray.300"/>}
                                         />
                                         <Input {...field} id="password" placeholder="password" type="password"/>
                                     </InputGroup>
@@ -107,11 +107,13 @@ function Login({updateFormType}) {
                             </Button>
                             <Stack
                                 fontSize="md"
-                                direction={{ base: 'column', sm: 'row' }}
+                                direction={{base: 'column', sm: 'row'}}
                                 align={'start'}
                                 justify={'space-between'}>
                                 <Text>Don't have an account?</Text>
-                                <Link color={'blue.400'} onClick={() => {updateFormType("SignUp")}}>Sign Up</Link>
+                                <Link color={'blue.400'} onClick={() => {
+                                    updateFormType("SignUp")
+                                }}>Sign Up</Link>
                             </Stack>
                         </Stack>
                     </Stack>

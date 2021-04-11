@@ -18,17 +18,17 @@ export const API_URL = "https://cryptomafias-api.herokuapp.com/"
 function App() {
     const [identity, setIdentity] = useState(null)
     const [user, setUser] = useState(null)
-    const metamask = useAsyncMemo(async() => {
-        try{
+    const metamask = useAsyncMemo(async () => {
+        try {
             return await getMetamask()
-        } catch(err) {
+        } catch (err) {
             createNotification("error", err.name, err.message)
         }
     }, [], {})
     const hub = useAsyncMemo(async () => {
-        try{
+        try {
             return await getHub(identity)
-        } catch(err) {
+        } catch (err) {
             createNotification("error", err.name, err.message)
         }
     }, [identity], {})

@@ -1,4 +1,4 @@
-import {Box, Stack, Text, useColorModeValue, Button} from '@chakra-ui/react';
+import {Box, Button, Stack, Text, useColorModeValue} from '@chakra-ui/react';
 import Avatar from '../Avatar';
 import {useContext} from "react";
 import {IdentityContext} from "../../App";
@@ -22,7 +22,7 @@ function PlayerCard({takeAction, ...player}) {
                             size="xs"
                             variant={"ghost"}
                             _focus={{}}
-                            onClick={async() => {
+                            onClick={async () => {
                                 const body = {playerId: identity.toString(), victimId: player.name}
                                 await takeAction(body)
                             }}

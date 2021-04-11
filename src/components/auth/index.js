@@ -22,6 +22,7 @@ export default function Auth({currentForm}) {
                 return null
         }
     }
+
     return (
         <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
             <Stack align={'center'}>

@@ -17,15 +17,15 @@ function Game() {
     const [room, setRoom] = useState({})
     const [playerToRole, setPlayersToRole] = useState({})
 
-    const takeAction = async(body) => {
+    const takeAction = async (body) => {
         const phase = room.phase
         const role = playerToRole[identity.public.toString()]
-        if(phase === "NIGHT") {
-            if(role === "MAFIA") {
+        if (phase === "NIGHT") {
+            if (role === "MAFIA") {
                 await axios.put(`${API_URL}/rooms/${roomId}/killVote`, body);
-            } else if(role === "DETECTIVE"){
+            } else if (role === "DETECTIVE") {
                 await axios.put(`${API_URL}/rooms/${roomId}/inspect`, body);
-            } else if(role==="DOCTOR"){
+            } else if (role === "DOCTOR") {
                 await axios.put(`${API_URL}/rooms/${roomId}/heal`, body);
             }
         } else if (phase === "VOTING") {
@@ -41,23 +41,23 @@ function Game() {
         // Ofcourse best way is to figure out whu listener is being closed.
         const updateRoom = (update) => {
             console.log(update)
-            if(!update) {
+            if (!update) {
                 fetch();
                 return;
             } // hack for undefined callback
-            if(update.collectionName !== "rooms") return
-            if(update.action === "SAVE"){
+            if (update.collectionName !== "rooms") return
+            if (update.action === "SAVE") {
                 setRoom(update.instance)
             }
         }
 
         const fetch = debounce(async () => {
-            if(hub && hub.hasOwnProperty("client")) {
+            if (hub && hub.hasOwnProperty("client")) {
                 const threadId = ThreadID.fromString(GAME_THREAD)
                 const initRoom = await hub.client.findByID(threadId, "rooms", roomId)
                 console.log(initRoom)
                 setRoom(initRoom)
-                if(!(threads && threads.hasOwnProperty("villagerThread"))){
+                if (!(threads && threads.hasOwnProperty("villagerThread"))) {
                     setThreads({villagerThread: ThreadID.fromString(initRoom.villagerThread)})
                 }
                 subRoom = await hub.client.listen(threadId, [{
@@ -70,7 +70,9 @@ function Game() {
         }, 2000)
         fetch()
         return (setTimeout(() => {
-            if(subRoom) {subRoom.close()}
+            if (subRoom) {
+                subRoom.close()
+            }
         }), 10000)
     }, [hub, roomId, threads])
 

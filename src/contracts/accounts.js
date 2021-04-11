@@ -10,7 +10,7 @@ const gptABI = [
     "function ownerOf(uint256 tokenId) public view virtual returns (address)"
 ]
 
-export function getGptContract(provider, signer){
+export function getGptContract(provider, signer) {
     const gptContract = new Contract(gptAddress, gptABI, provider)
     const gptSigner = gptContract.connect(signer)
     return {gptContract, gptSigner}
