@@ -4266,6 +4266,11 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
+bcryptjs@^2.4.3:
+  version "2.4.3"
+  resolved "https://registry.yarnpkg.com/bcryptjs/-/bcryptjs-2.4.3.tgz#9ab5627b93e60621ff7cdac5da9733027df1d0cb"
+  integrity sha1-mrVie5PmBiH/fNrF2pczAn3x0Ms=
+
 bech32@1.1.4:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/bech32/-/bech32-1.1.4.tgz#e38c9f37bf179b8eb16ae3a772b40c356d4832e9"
@@ -10028,6 +10033,14 @@ pnp-webpack-plugin@1.6.4:
   integrity sha512-7Wjy+9E3WwLOEL30D+m8TSTF7qJJUJLONBnwQp0518siuMxUQUbgZwssaFX+QKlZkjHZcw/IpZCt/H0srrntSg==
   dependencies:
     ts-pnp "^1.1.6"
+
+poly-crypto@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/poly-crypto/-/poly-crypto-2.0.0.tgz#bc9433f95a28458c01dc9cfdeae266f13a20b22e"
+  integrity sha512-d273/GaA3jszdLmLUyGX7hiAFGjWe76f26g3QS9nQqF/RV+0y1/Vjn3KN1jBCdz3cqFBriZl344hKu1rKQX5aw==
+  dependencies:
+    bcryptjs "^2.4.3"
+    node-forge "^0.10.0"
 
 popmotion@9.3.4:
   version "9.3.4"

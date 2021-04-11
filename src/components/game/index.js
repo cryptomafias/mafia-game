@@ -14,7 +14,8 @@ function Game() {
     const {roomId} = useParams()
     const [threads, setThreads] = useState({})
     const [room, setRoom] = useState({})
-    // const [players, setPlayers] = useState([])
+    const [playerToRole, setPlayersToRole] = useState({})
+    // const [playerNameToNum, serPlayerNameToNum] = useState({})
 
     useEffect(() => {
         let subRoom
@@ -33,12 +34,14 @@ function Game() {
         }
 
         const fetch = debounce(async () => {
-            if (hub.hasOwnProperty("client")) {
+            if(hub && hub.hasOwnProperty("client")) {
                 const threadId = ThreadID.fromString(GAME_THREAD)
                 const initRoom = await hub.client.findByID(threadId, "rooms", roomId)
                 console.log(initRoom)
                 setRoom(initRoom)
-                setThreads({villagerThread: initRoom.villagerThread})
+                if(!(threads && threads.hasOwnProperty("villagerThread"))){
+                    setThreads({villagerThread: ThreadID.fromString(initRoom.villagerThread)})
+                }
                 subRoom = await hub.client.listen(threadId, [{
                         collectionName: "rooms",
                         instanceID: roomId
@@ -48,12 +51,10 @@ function Game() {
             }
         }, 2000)
         fetch()
-        return (
-            () => {
-                if(subRoom) {subRoom.close()}
-            }
-        )
-    }, [hub, roomId])
+        return (setTimeout(() => {
+            if(subRoom) {subRoom.close()}
+        }), 10000)
+    }, [hub, roomId, threads])
 
     return (
         <Center>
@@ -71,12 +72,24 @@ function Game() {
                             <PlayerCard
                                 key={i}
                                 number={i + 1}
-                                role={"ALIVE"}
-                                name={room.hasOwnProperty("players") && room.players.length > i ? room.players[i] : ""}
+                                role={(
+                                    room &&
+                                    room.hasOwnProperty("players") &&
+                                    room.players.length > i &&
+                                    playerToRole &&
+                                    playerToRole.hasOwnProperty(room.players[i])
+                                )
+                                    ? playerToRole[room.players[i]] : "ALIVE"
+                                }
+                                name={room && room.hasOwnProperty("players") && room.players.length > i ? room.players[i] : ""}
                             />
                         ))}
                     </SimpleGrid>
-                    <GameChat threads={threads}/>
+                    <GameChat
+                        threads={threads}
+                        players={room && room.hasOwnProperty("players") ? room.players : []}
+                        setPlayerToRole={setPlayersToRole}
+                    />
                 </VStack>
             </Box>
         </Center>
