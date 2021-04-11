@@ -1,29 +1,46 @@
-import {Box, Input, InputGroup, InputRightAddon, Text, useColorModeValue, VStack} from '@chakra-ui/react';
-import {useContext, useEffect} from "react";
+import {Box, Input, InputGroup, InputRightAddon, Text,Button, useColorModeValue, VStack} from '@chakra-ui/react';
+import {useContext, useEffect, useState} from "react";
 import {HubContext} from "../../App";
 import {ThreadID} from "@textile/hub";
 
 function GameChat({threads}){
     const hub = useContext(HubContext)
-    // const [messages, setMessages] = useState([])
-
+    const [messages, setMessages] = useState([{"id":1234,
+    "message":"sup boi"}])
+    const [userMessage,setUserMessage] = useState()
     useEffect(() => {
         const fetch = async() => {
             if(hub && hub.hasOwnProperty("client") && threads && threads.hasOwnProperty("villagerThread")){
+
                 console.log("chats loading")
                 const villagerThread = ThreadID.fromString(threads.villagerThread)
                 const initMessages = await hub.client.find(villagerThread, 'chat', {})
-                console.log(initMessages)
+                setMessages(initMessages);
+                
             }
+            console.log(messages.id)
         }
         fetch()
     }, [hub, threads])
+
+    //Implement function to send message here
+    const sendMessage = async(e) => {
+        e.preventDefault()
+        console.log("Empty Message")
+        if(userMessage!=='')
+        {
+            //If message is not empty send it
+            console.log("Message Sent!")
+            console.log(userMessage)
+        }
+    }
 
     return (
         <VStack spacing={2}>
             <Box
                 w="650px"
-                maxH="170px"
+                minH ="150px"
+                maxH="250px"
                 rounded="5px"
                 overflow="hidden"
                 boxShadow="md"
@@ -32,23 +49,32 @@ function GameChat({threads}){
                 pl={2}
                 overflowY='scroll'
             >
-                <Text fontSize={"md"}>1: Hi</Text>
-                <Text fontSize={"md"}>2: Hello</Text>
-                <Text fontSize={"md"}>1: I am noobie</Text>
-                <Text fontSize={"md"}>1: Please tell me how to play</Text>
-                <Text fontSize={"md"}>2: It's very easy</Text>
-                <Text fontSize={"md"}>2: You will get a role in the beginning</Text>
-                <Text fontSize={"md"}>2: If you are mafia, kill player at Night</Text>
-                <Text fontSize={"md"}>2: If you are detective, inspect a player</Text>
-                <Text fontSize={"md"}>2: If you are doctor, heal someone</Text>
-                <Text fontSize={"md"}>1: Thanks, this sounds fun!</Text>
+                <main>
+                
+                {messages && messages.map(msg=> <ChatMessage id={msg.id} message={msg.message}/>)}
+                
+                </main>
+                
             </Box>
-            <InputGroup width='full'>
-                <Input bg={useColorModeValue('gray.200', 'gray.600')}/>
-                <InputRightAddon as='button' children='SEND'/>
+            <form onSubmit={sendMessage}>
+            <InputGroup width = {650} >
+                <Input 
+                bg={useColorModeValue('gray.200', 'gray.600')}
+                value ={userMessage} onChange={(e)=>setUserMessage(e.target.value)}/>
+                <InputRightAddon as='button' children='SEND' type = "submit" />
             </InputGroup>
+            </form>
+            
         </VStack>
     )
 }
+
+function ChatMessage({id,message}) {
+    //processing before printing
+  
+    return (
+        <Text fontSize={"l"}>{id} {message}</Text>
+    )
+  }
 
 export default GameChat

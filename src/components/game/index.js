@@ -33,12 +33,14 @@ function Game() {
         }
 
         const fetch = debounce(async () => {
-            if (hub.hasOwnProperty("client")) {
+            if (hub.hasOwnProperty("client") && hub) {
                 const threadId = ThreadID.fromString(GAME_THREAD)
                 const initRoom = await hub.client.findByID(threadId, "rooms", roomId)
                 console.log(initRoom)
                 setRoom(initRoom)
-                setThreads({villagerThread: initRoom.villagerThread})
+                if(!threads){
+                    setThreads({villagerThread: initRoom.villagerThread})   
+                }
                 subRoom = await hub.client.listen(threadId, [{
                         collectionName: "rooms",
                         instanceID: roomId
@@ -46,6 +48,7 @@ function Game() {
                     updateRoom
                 )
             }
+            
         }, 2000)
         fetch()
         return (
