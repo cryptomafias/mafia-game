@@ -5,7 +5,7 @@ import {ThreadID} from "@textile/hub";
 
 function GameChat({threads}){
     const hub = useContext(HubContext)
-    const [messages, setMessages] = useState([{"id":1234,
+    const [messages, setMessages] = useState([{"_id":1234,
     "message":"sup boi"}])
     const [userMessage,setUserMessage] = useState()
     useEffect(() => {
@@ -26,7 +26,6 @@ function GameChat({threads}){
     //Implement function to send message here
     const sendMessage = async(e) => {
         e.preventDefault()
-        console.log("Empty Message")
         if(userMessage!=='')
         {
             //If message is not empty send it
@@ -51,7 +50,7 @@ function GameChat({threads}){
             >
                 <main>
                 
-                {messages && messages.map(msg=> <ChatMessage id={msg.id} message={msg.message}/>)}
+                {messages && messages.map(msg=> <ChatMessage id={msg._id} message={msg.message}/>)}
                 
                 </main>
                 
@@ -73,7 +72,7 @@ function ChatMessage({id,message}) {
     //processing before printing
   
     return (
-        <Text fontSize={"l"}>{id} {message}</Text>
+        <Text fontSize={"l"}>{id}:{message}</Text>
     )
   }
 
