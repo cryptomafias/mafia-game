@@ -10,10 +10,10 @@ import {
 import { useContext, useEffect, useState } from 'react';
 import { HubContext } from '../../App';
 import { PrivateKey, ThreadID } from '@textile/hub';
-
-function GameChat({ threads }) {
+import {axios} from 'axios';
+function GameChat({ threads,roomId }) {
   const hub = useContext(HubContext);
-  const [messages, setMessages] = useState([{ _id: 1234, message: 'sup boi' }]);
+  const [messages, setMessages] = useState([]);
   const [userMessage, setUserMessage] = useState();
   useEffect(() => {
     const fetch = async () => {
@@ -27,7 +27,7 @@ function GameChat({ threads }) {
         const villagerThread = ThreadID.fromString(threads.villagerThread);
         const initMessages = await hub.client.find(villagerThread, 'chat', {});
         
-        setMessages(initMessages);
+        //setMessages(initMessages);
       }
     };
     fetch();
@@ -79,13 +79,55 @@ function GameChat({ threads }) {
   );
 }
 
+function serverAction({role,phase,playerId,victimId}){
+  if(phase == "NIGHT")
+  {
+    if(role == "MAFIA")
+    {   
+        killVote(playerId,victimId);
+    }
+    else if(role == "DETECTIVE"){
+        inspect(playerId,victimId);
+    }
+    else if(role=="DOCTOR"){
+        heal(playerId,victimId);
+    }
+  }
+  else if (phase == "VOTING")
+  {
+        ejectVote(playerId,victimId);
+  }
+}
+
+function killVote({playerId,victimId})
+{
+    const body = [{"playerId":playerId},{"victimId":victimId}];
+    const res = await axios.put('/rooms/'+roomId+'killVote',{body});
+}
+
+function ejectVote({playerId,victimId})
+{
+    const body = [{"playerId":playerId},{"victimId":victimId}];
+    const res = await axios.put('/rooms/'+roomId+'vote',{}).then(res=>{console.log(res)})
+}
+
+function inspect({playerId,victimId}){
+    const body = [{"playerId":playerId},{"victimId":victimId}];
+    const res = await axios.get('/rooms/'+roomId+'inspect',{body}).then(res=>{console.log(res)})
+}
+
+function heal({playerId,victimId}){
+  const body = [{"playerId":playerId},{"victimId":victimId}];
+  const res = axios.put('/rooms/'+roomId+'heal',{body}).then(res=>{console.log(res)})
+}
+
 function ChatMessage({ id, message }) {
   //processing before printing
-  const msg = PrivateKey.decrypt(message.encryptedRole)
-  console.log(msg)
+  // const msg = PrivateKey.decrypt(message.encryptedRole)
+  // console.log(msg)
   return (
     <Text fontSize={'l'}>
-      {id}:{msg}
+      {id}:{message}
     </Text>
   );
 }

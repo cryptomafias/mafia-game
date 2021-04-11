@@ -76,7 +76,7 @@ function Game() {
                             />
                         ))}
                     </SimpleGrid>
-                    <GameChat threads={threads}/>
+                    <GameChat threads={threads} roomId={roomId}/>
                 </VStack>
             </Box>
         </Center>
