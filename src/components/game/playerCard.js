@@ -36,7 +36,7 @@ function PlayerCard(player) {
                         >
                             {player.role}
                         </Text>
-                    </>) : <Box width={"100px"} height={"150px"} display={"flex"}/>
+                    </>) : <Box width={"130px"} height={"150px"} display={"flex"}/>
                 }
             </Stack>
         </Box>

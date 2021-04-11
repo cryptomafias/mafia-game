@@ -1,52 +1,173 @@
-import {Box, Input, InputGroup, InputRightAddon, Text, useColorModeValue, VStack} from '@chakra-ui/react';
-import {useContext, useEffect} from "react";
-import {HubContext} from "../../App";
-import {ThreadID} from "@textile/hub";
+import {
+    Box,
+    FormControl,
+    Input,
+    InputGroup,
+    InputRightAddon,
+    Stack,
+    Text,
+    useColorModeValue,
+    VStack
+} from '@chakra-ui/react';
+import React, {useContext, useEffect, useState} from "react";
+import {HubContext, IdentityContext} from "../../App";
+import {Field, Form, Formik} from "formik";
+import * as yup from "yup";
+import {debounceByArgs} from "../utils";
+import {PrivateKey} from "@textile/hub";
+import {PolyAES} from "poly-crypto";
 
-function GameChat({threads}){
+const initialState = {
+    message: ""
+}
+
+const schema = yup.object().shape({
+    message: yup.string().required("Message can't be empty!")
+});
+
+function Message({players, message, setGetRole}) {
+    const {identity} = useContext(IdentityContext)
+    const notificationColor = useColorModeValue('red', 'tomato')
+
+    if (message.type === "CHAT" && message.to === "ALL") {
+        const playerIdx = players.indexOf(message.from)
+        console.log(`${playerIdx + 1}: ${message.message}`)
+        return (
+            <Text fontSize={"md"}>{`${playerIdx + 1}`}: {message.message}</Text>
+        )
+    } else if (message.type === "SYSTEM" && message.to === "ALL") {
+        let notification
+        const playerIdx = message.message === "none" ? "none" : players.indexOf(message.from)
+        if (message.subject === "DEAD_PLAYER") {
+            notification = `${playerIdx} has been killed during night!`
+        } else if (message.subject === "EJECTED_PLAYER") {
+            notification = `${playerIdx} has been voted out!`
+        }
+        return (
+            <Text color={notificationColor} fontSize={"md"}>Notification: {notification}</Text>
+        )
+    } else if (message.type === "SYSTEM" && message.to === identity.public.toString()) {
+        if (message.subject === "RoleAssignment") {
+            const getRole = async () => {
+                const data = JSON.parse(message.message)
+                const privKey = PrivateKey.fromString(identity.toString())
+                const hexKey = await privKey.decrypt(Buffer.from(data.encryptedHexKey))
+                const role = PolyAES.withKey(hexKey.toString()).decrypt(data.encryptedRole)
+                return role
+            }
+            setGetRole(getRole)
+        }
+    }
+    return null
+}
+
+
+function GameChat({threads, players, setPlayerToRole}) {
     const hub = useContext(HubContext)
-    // const [messages, setMessages] = useState([])
+    const {identity} = useContext(IdentityContext)
+    const [messages, setMessages] = useState([])
+    const [getRole, setGetRole] = useState(null)
+    const BoxBG = useColorModeValue('gray.200', 'gray.600')
+
+    const sendMessage = async (values, {setSubmitting, resetForm}) => {
+        const message = {
+            subject: "",
+            message: values.message,
+            to: "ALL",
+            from: identity.public.toString(),
+            type: "CHAT"
+        }
+        await hub.client.create(threads.villagerThread, "chat", [message])
+        setSubmitting(false)
+        resetForm()
+    }
 
     useEffect(() => {
         const fetch = async() => {
-            if(hub && hub.hasOwnProperty("client") && threads && threads.hasOwnProperty("villagerThread")){
-                console.log("chats loading")
-                const villagerThread = ThreadID.fromString(threads.villagerThread)
-                const initMessages = await hub.client.find(villagerThread, 'chat', {})
-                console.log(initMessages)
+            if(getRole){
+                const role = await getRole()
+                setPlayerToRole(playerToRole => {
+                    playerToRole[identity.public.toString()] = role
+                    return playerToRole
+                })
             }
         }
         fetch()
+    }, [getRole, identity, setPlayerToRole])
+
+    useEffect(() => {
+        let subMessage
+        const receiveMessage = debounceByArgs((update) => {
+            console.log(update)
+            if (!update) {
+                // fetch();
+                return;
+            } // hack for undefined callback
+            if (update.collectionName !== "chat") return
+            if (update.action === "CREATE") {
+                setMessages((messages) => ([...messages, update.instance]))
+            }
+        }, 1500)
+        const fetch = async () => {
+            console.log("fetching")
+            if (hub && hub.hasOwnProperty("client") && threads && threads.hasOwnProperty("villagerThread")) {
+                console.log("chats loading")
+                const initMessages = await hub.client.find(threads.villagerThread, 'chat', {})
+                setMessages(initMessages)
+                console.log(initMessages)
+                subMessage = await hub.client.listen(threads.villagerThread, [{
+                        collectionName: "chat"
+                    }],
+                    receiveMessage
+                )
+            }
+        }
+        fetch()
+        return (setTimeout(() => {
+            if (subMessage) {
+                subMessage.close()
+            }
+        }), 10000)
     }, [hub, threads])
 
     return (
         <VStack spacing={2}>
             <Box
                 w="650px"
-                maxH="170px"
+                h="170px"
                 rounded="5px"
                 overflow="hidden"
                 boxShadow="md"
-                bg={useColorModeValue('gray.200', 'gray.600')}
+                bg={BoxBG}
                 align="left"
                 pl={2}
                 overflowY='scroll'
             >
-                <Text fontSize={"md"}>1: Hi</Text>
-                <Text fontSize={"md"}>2: Hello</Text>
-                <Text fontSize={"md"}>1: I am noobie</Text>
-                <Text fontSize={"md"}>1: Please tell me how to play</Text>
-                <Text fontSize={"md"}>2: It's very easy</Text>
-                <Text fontSize={"md"}>2: You will get a role in the beginning</Text>
-                <Text fontSize={"md"}>2: If you are mafia, kill player at Night</Text>
-                <Text fontSize={"md"}>2: If you are detective, inspect a player</Text>
-                <Text fontSize={"md"}>2: If you are doctor, heal someone</Text>
-                <Text fontSize={"md"}>1: Thanks, this sounds fun!</Text>
+                {
+                    messages.map(message => (
+                        <Message key={message._id} players={players} message={message} setGetRole={setGetRole}/>
+                    ))
+                }
             </Box>
-            <InputGroup width='full'>
-                <Input bg={useColorModeValue('gray.200', 'gray.600')}/>
-                <InputRightAddon as='button' children='SEND'/>
-            </InputGroup>
+            <Formik initialValues={initialState} onSubmit={sendMessage} validationSchema={schema}>
+                {(props) => (
+                    <Form>
+                        <Stack spacing={4} w="650px">
+                            <Field name="message">
+                                {({field, form}) => (
+                                    <FormControl isInvalid={form.errors.message && form.touched.message}>
+                                        <InputGroup width='full'>
+                                            <Input {...field} id={"message"} bg={BoxBG}/>
+                                            <InputRightAddon as='button' children='send' type="submit"
+                                                             disabled={props.isSubmitting}/>
+                                        </InputGroup>
+                                    </FormControl>
+                                )}
+                            </Field>
+                        </Stack>
+                    </Form>
+                )}
+            </Formik>
         </VStack>
     )
 }
