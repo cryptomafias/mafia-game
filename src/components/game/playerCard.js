@@ -1,7 +1,10 @@
-import {Box, Stack, Text, useColorModeValue, Button} from '@chakra-ui/react';
+import {Box, Button, Stack, Text, useColorModeValue} from '@chakra-ui/react';
 import Avatar from '../Avatar';
+import {useContext} from "react";
+import {IdentityContext} from "../../App";
 
-function PlayerCard(player) {
+function PlayerCard({takeAction, ...player}) {
+    const {identity} = useContext(IdentityContext)
     return (
         <Box
             rounded="20px"
@@ -19,6 +22,10 @@ function PlayerCard(player) {
                             size="xs"
                             variant={"ghost"}
                             _focus={{}}
+                            onClick={async () => {
+                                const body = {playerId: identity.toString(), victimId: player.name}
+                                await takeAction(body)
+                            }}
                         >
                             <Text
                                 textTransform="uppercase"

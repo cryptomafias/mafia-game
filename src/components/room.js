@@ -15,7 +15,7 @@ import {Field, Form, Formik} from "formik";
 import * as yup from "yup";
 import {ImEnter} from "react-icons/all";
 import axios from "axios";
-import {IdentityContext} from "../App";
+import {API_URL, IdentityContext} from "../App";
 
 
 const initialState = {
@@ -30,7 +30,7 @@ function Room() {
     const {identity} = useContext(IdentityContext)
     const history = useHistory()
     const onJoinRoom = async (values, {setSubmitting}) => {
-        const response = await axios.put(`http://localhost:5000/rooms/${values.roomId}`, {playerId: identity.toString()})
+        const response = await axios.put(`${API_URL}/rooms/${values.roomId}`, {playerId: identity.toString()})
         const roomInfo = response.data
         console.log(roomInfo)
         setSubmitting(false)
@@ -38,7 +38,7 @@ function Room() {
     }
     const onCreateRoom = async (values, {setSubmitting}) => {
         console.log({playerId: identity.toString()})
-        const response = await axios.post("http://localhost:5000/rooms", {playerId: identity.toString()})
+        const response = await axios.post(`${API_URL}/rooms`, {playerId: identity.toString()})
         const roomInfo = response.data
         setSubmitting(false)
         history.push(`/room/${roomInfo.roomId}`)

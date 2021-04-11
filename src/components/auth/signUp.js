@@ -18,7 +18,7 @@ import {Icon, LockIcon} from '@chakra-ui/icons'
 
 import {createNotification} from "../notification"
 import {IdentityContext, MetamaskContext, UserContext} from "../../App";
-import {generatePrivateKey, initBuckets, getIpnsLink, identityToAccountId, pushFile} from "../utils";
+import {generatePrivateKey, getIpnsLink, identityToAccountId, initBuckets, pushFile} from "../utils";
 import {FaUser} from "react-icons/all";
 import {getGptContract} from "../../contracts/accounts";
 import {useHistory, useLocation} from "react-router-dom";

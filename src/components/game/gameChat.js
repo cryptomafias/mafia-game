@@ -83,8 +83,8 @@ function GameChat({threads, players, setPlayerToRole}) {
     }
 
     useEffect(() => {
-        const fetch = async() => {
-            if(getRole){
+        const fetch = async () => {
+            if (getRole) {
                 const role = await getRole()
                 setPlayerToRole(playerToRole => {
                     playerToRole[identity.public.toString()] = role
