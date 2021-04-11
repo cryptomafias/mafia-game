@@ -5,7 +5,7 @@ import Auth from "./auth";
 import Home from "./home";
 import Profile from "./profile";
 import Room from "./room";
-import Game from "./game";
+import Game from "./game/index";
 
 function Router(props) {
     return (

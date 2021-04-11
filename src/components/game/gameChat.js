@@ -9,7 +9,7 @@ import {
 } from '@chakra-ui/react';
 import { useContext, useEffect, useState } from 'react';
 import { HubContext } from '../../App';
-import { ThreadID } from '@textile/hub';
+import { PrivateKey, ThreadID } from '@textile/hub';
 
 function GameChat({ threads }) {
   const hub = useContext(HubContext);
@@ -26,6 +26,7 @@ function GameChat({ threads }) {
         console.log('chats loading');
         const villagerThread = ThreadID.fromString(threads.villagerThread);
         const initMessages = await hub.client.find(villagerThread, 'chat', {});
+        
         setMessages(initMessages);
       }
     };
@@ -80,10 +81,11 @@ function GameChat({ threads }) {
 
 function ChatMessage({ id, message }) {
   //processing before printing
-
+  const msg = PrivateKey.decrypt(message.encryptedRole)
+  console.log(msg)
   return (
     <Text fontSize={'l'}>
-      {id}:{message}
+      {id}:{msg}
     </Text>
   );
 }
