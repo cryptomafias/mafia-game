@@ -105,23 +105,23 @@ function GameChat({threads, players, setPlayerToRole}) {
     function killVote({playerId,victimId})
     {
         const body = [{"playerId":playerId},{"victimId":victimId}];
-        const res = await axios.put('/rooms/'+roomId+'killVote',{body});
+        const res = await axios.put('https://cryptomafias-api.herokuapp.com/rooms/'+roomId+'killVote',{body});
     }
     
     function ejectVote({playerId,victimId})
     {
         const body = [{"playerId":playerId},{"victimId":victimId}];
-        const res = await axios.put('/rooms/'+roomId+'vote',{}).then(res=>{console.log(res)})
+        const res = await axios.put('https://cryptomafias-api.herokuapp.com/rooms/'+roomId+'vote',{}).then(res=>{console.log(res)})
     }
     
     function inspect({playerId,victimId}){
         const body = [{"playerId":playerId},{"victimId":victimId}];
-        const res = await axios.get('/rooms/'+roomId+'inspect',{body}).then(res=>{console.log(res)})
+        const res = await axios.get('https://cryptomafias-api.herokuapp.com/rooms/'+roomId+'inspect',{body}).then(res=>{console.log(res)})
     }
     
     function heal({playerId,victimId}){
       const body = [{"playerId":playerId},{"victimId":victimId}];
-      const res = axios.put('/rooms/'+roomId+'heal',{body}).then(res=>{console.log(res)})
+      const res = axios.put('https://cryptomafias-api.herokuapp.com/rooms/'+roomId+'heal',{body}).then(res=>{console.log(res)})
     }
 
     useEffect(() => {
