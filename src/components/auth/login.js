@@ -18,9 +18,10 @@ import {LockIcon} from '@chakra-ui/icons'
 
 import {createNotification} from "../notification"
 import {IdentityContext, MetamaskContext, UserContext} from "../../App";
-import {generatePrivateKey, initBuckets, identityToAccountId, pullFile} from "../utils";
+import {generatePrivateKey, identityToAccountId} from "../utils";
 import {useHistory, useLocation} from "react-router-dom";
 import {getGptContract} from "../../contracts/accounts";
+import axios from "axios";
 
 const initialState = {
     password: '',
@@ -53,15 +54,8 @@ function Login({updateFormType}) {
             const accountId = identityToAccountId(newIdentity)
             console.log(accountId)
             const gptURI = await gptContract.signIn(accountId)
-            console.log(gptURI)
-            const buckets = await initBuckets(newIdentity)
-            const buck = await buckets.getOrCreate('profiles')
-            const userData = await pullFile(
-                buckets,
-                `${newIdentity.public.toString()}.json`,
-                buck.root.key
-            )
-            setUser(userData)
+            const userData = await axios.get(gptURI)
+            setUser(userData.data)
             createNotification(
                 "success",
                 "Signed In",
@@ -86,7 +80,7 @@ function Login({updateFormType}) {
                                     <InputGroup>
                                         <InputLeftElement
                                             pointerEvents="none"
-                                            children={<LockIcon color="gray.300" />}
+                                            children={<LockIcon color="gray.300"/>}
                                         />
                                         <Input {...field} id="password" placeholder="password" type="password"/>
                                     </InputGroup>
@@ -107,11 +101,13 @@ function Login({updateFormType}) {
                             </Button>
                             <Stack
                                 fontSize="md"
-                                direction={{ base: 'column', sm: 'row' }}
+                                direction={{base: 'column', sm: 'row'}}
                                 align={'start'}
                                 justify={'space-between'}>
                                 <Text>Don't have an account?</Text>
-                                <Link color={'blue.400'} onClick={() => {updateFormType("SignUp")}}>Sign Up</Link>
+                                <Link color={'blue.400'} onClick={() => {
+                                    updateFormType("SignUp")
+                                }}>Sign Up</Link>
                             </Stack>
                         </Stack>
                     </Stack>

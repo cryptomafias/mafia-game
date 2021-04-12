@@ -1,4 +1,4 @@
-import React, {useContext} from "react"
+import React, {useContext, useState} from "react"
 import {
     Button,
     FormControl,
@@ -15,7 +15,7 @@ import {Field, Form, Formik} from "formik";
 import * as yup from "yup";
 import {ImEnter} from "react-icons/all";
 import axios from "axios";
-import {IdentityContext} from "../App";
+import {API_URL, IdentityContext} from "../App";
 
 
 const initialState = {
@@ -29,42 +29,37 @@ const schema = yup.object().shape({
 function Room() {
     const {identity} = useContext(IdentityContext)
     const history = useHistory()
+    const [isLoading, setLoading] = useState(false)
     const onJoinRoom = async (values, {setSubmitting}) => {
-        const response = await axios.put(`http://localhost:5000/rooms/${values.roomId}`, {playerId: identity.toString()})
+        const response = await axios.put(`${API_URL}/rooms/${values.roomId}`, {playerId: identity.toString()})
         const roomInfo = response.data
         console.log(roomInfo)
         setSubmitting(false)
         history.push(`room/${roomInfo.roomId}`)
     }
-    const onCreateRoom = async (values, {setSubmitting}) => {
+    const onCreateRoom = async () => {
+        setLoading(true)
         console.log({playerId: identity.toString()})
-        const response = await axios.post("http://localhost:5000/rooms", {playerId: identity.toString()})
+        const response = await axios.post(`${API_URL}/rooms`, {playerId: identity.toString()})
         const roomInfo = response.data
-        setSubmitting(false)
+        setLoading(false)
         history.push(`/room/${roomInfo.roomId}`)
     }
 
     return (
         <Container>
             <Stack spacing={4}>
-                <Formik onSubmit={onCreateRoom}>
-                    {(props) => (
-                        <Form>
-                            <Stack spacing={4}>
-                                <Button
-                                    isLoading={props.isSubmitting}
-                                    type="submit"
-                                    bg={'blue.400'}
-                                    color={'white'}
-                                    _hover={{
-                                        bg: 'blue.500',
-                                    }}>
-                                    Create Room
-                                </Button>
-                            </Stack>
-                        </Form>
-                    )}
-                </Formik>
+                <Button
+                    isLoading={isLoading}
+                    onClick={onCreateRoom}
+                    bg={'blue.400'}
+                    color={'white'}
+                    _hover={{
+                        bg: 'blue.500',
+                    }}>
+                    Create Room
+                </Button>
+
                 <Text>or</Text>
                 <Formik initialValues={initialState} onSubmit={onJoinRoom} validationSchema={schema}>
                     {(props) => (

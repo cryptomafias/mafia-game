@@ -3,18 +3,36 @@ import GameChat from './gameChat';
 import {Box, Center, SimpleGrid, useColorModeValue, VStack} from '@chakra-ui/react';
 import {useParams} from "react-router-dom";
 import {useContext, useEffect, useState} from "react";
-import {GAME_THREAD, HubContext} from "../../App";
+import {API_URL, GAME_THREAD, HubContext, IdentityContext} from "../../App";
 import {ThreadID} from "@textile/hub";
 import TitleBar from "./titlebar";
 import {debounce} from "../utils";
+import axios from "axios";
 
 function Game() {
     const hub = useContext(HubContext)
-    // const {identity} = useContext(IdentityContext)
+    const {identity} = useContext(IdentityContext)
     const {roomId} = useParams()
     const [threads, setThreads] = useState({})
     const [room, setRoom] = useState({})
     const [playerToRole, setPlayersToRole] = useState({})
+
+    const takeAction = async (body) => {
+        const phase = room.phase
+        const role = playerToRole[identity.public.toString()]
+        if (phase === "NIGHT") {
+            if (role === "MAFIA") {
+                await axios.put(`${API_URL}/rooms/${roomId}/killVote`, body);
+            } else if (role === "DETECTIVE") {
+                await axios.put(`${API_URL}/rooms/${roomId}/inspect`, body);
+            } else if (role === "DOCTOR") {
+                await axios.put(`${API_URL}/rooms/${roomId}/heal`, body);
+            }
+        } else if (phase === "VOTING") {
+            await axios.put(`${API_URL}/rooms/${roomId}/vote`, body);
+        }
+    }
+
     // const [playerNameToNum, serPlayerNameToNum] = useState({})
 
     useEffect(() => {
@@ -23,23 +41,23 @@ function Game() {
         // Ofcourse best way is to figure out whu listener is being closed.
         const updateRoom = (update) => {
             console.log(update)
-            if(!update) {
+            if (!update) {
                 fetch();
                 return;
             } // hack for undefined callback
-            if(update.collectionName !== "rooms") return
-            if(update.action === "SAVE"){
+            if (update.collectionName !== "rooms") return
+            if (update.action === "SAVE") {
                 setRoom(update.instance)
             }
         }
 
         const fetch = debounce(async () => {
-            if(hub && hub.hasOwnProperty("client")) {
+            if (hub && hub.hasOwnProperty("client")) {
                 const threadId = ThreadID.fromString(GAME_THREAD)
                 const initRoom = await hub.client.findByID(threadId, "rooms", roomId)
                 console.log(initRoom)
                 setRoom(initRoom)
-                if(!(threads && threads.hasOwnProperty("villagerThread"))){
+                if (!(threads && threads.hasOwnProperty("villagerThread"))) {
                     setThreads({villagerThread: ThreadID.fromString(initRoom.villagerThread)})
                 }
                 subRoom = await hub.client.listen(threadId, [{
@@ -52,7 +70,9 @@ function Game() {
         }, 2000)
         fetch()
         return (setTimeout(() => {
-            if(subRoom) {subRoom.close()}
+            if (subRoom) {
+                subRoom.close()
+            }
         }), 10000)
     }, [hub, roomId, threads])
 
@@ -72,6 +92,7 @@ function Game() {
                             <PlayerCard
                                 key={i}
                                 number={i + 1}
+                                takeAction={takeAction}
                                 role={(
                                     room &&
                                     room.hasOwnProperty("players") &&
