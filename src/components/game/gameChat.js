@@ -9,13 +9,13 @@ import {
     useColorModeValue,
     VStack
 } from '@chakra-ui/react';
-import React, {useContext, useEffect, useState} from "react";
-import {HubContext, IdentityContext} from "../../App";
+import React, {useCallback, useContext, useEffect, useState} from "react";
+import {API_URL, HubContext, IdentityContext} from "../../App";
 import {Field, Form, Formik} from "formik";
 import * as yup from "yup";
-import {debounceByArgs} from "../utils";
-import {PrivateKey} from "@textile/hub";
-import {PolyAES} from "poly-crypto";
+// import {PrivateKey} from "@textile/hub";
+// import {PolyAES} from "poly-crypto";
+import axios from "axios";
 
 const initialState = {
     message: ""
@@ -25,48 +25,27 @@ const schema = yup.object().shape({
     message: yup.string().required("Message can't be empty!")
 });
 
-function Message({players, message, setGetRole}) {
-    const {identity} = useContext(IdentityContext)
-    const notificationColor = useColorModeValue('red', 'tomato')
 
-    if (message.type === "CHAT" && message.to === "ALL") {
-        const playerIdx = players.indexOf(message.from)
-        console.log(`${playerIdx + 1}: ${message.message}`)
+function Message({notification}) {
+    const notificationColor = useColorModeValue('red', 'tomato')
+    if (notification.type === "CHAT") {
         return (
-            <Text fontSize={"md"}>{`${playerIdx + 1}`}: {message.message}</Text>
+            <Text fontSize={"md"}>{notification.Notification}</Text>
         )
-    } else if (message.type === "SYSTEM" && message.to === "ALL") {
-        let notification
-        const playerIdx = message.message === "none" ? "none" : players.indexOf(message.from)
-        if (message.subject === "DEAD_PLAYER") {
-            notification = `${playerIdx} has been killed during night!`
-        } else if (message.subject === "EJECTED_PLAYER") {
-            notification = `${playerIdx} has been voted out!`
-        }
+    } else if (notification.type === "SYSTEM") {
         return (
-            <Text color={notificationColor} fontSize={"md"}>Notification: {notification}</Text>
+            <Text color={notificationColor} fontSize={"md"}>Notification: {notification.Notification}</Text>
         )
-    } else if (message.type === "SYSTEM" && message.to === identity.public.toString()) {
-        if (message.subject === "RoleAssignment") {
-            const getRole = async () => {
-                const data = JSON.parse(message.message)
-                const privKey = PrivateKey.fromString(identity.toString())
-                const hexKey = await privKey.decrypt(Buffer.from(data.encryptedHexKey))
-                const role = PolyAES.withKey(hexKey.toString()).decrypt(data.encryptedRole)
-                return role
-            }
-            setGetRole(getRole)
-        }
     }
     return null
 }
 
 
-function GameChat({threads, players, setPlayerToRole}) {
+function GameChat({room, threads, setThreads, setPlayerToRole}) {
     const hub = useContext(HubContext)
     const {identity} = useContext(IdentityContext)
     const [messages, setMessages] = useState([])
-    const [getRole, setGetRole] = useState(null)
+    const [messageIdExists, setMessageIdExists] = useState(new Set())
     const BoxBG = useColorModeValue('gray.200', 'gray.600')
 
     const sendMessage = async (values, {setSubmitting, resetForm}) => {
@@ -82,37 +61,71 @@ function GameChat({threads, players, setPlayerToRole}) {
         resetForm()
     }
 
-    useEffect(() => {
-        const fetch = async () => {
-            if (getRole) {
-                const role = await getRole()
+    const messageParser = useCallback(async (message) => {
+        if (message.type === "CHAT" && message.to === "ALL") {
+            const playerIdx = room.players.indexOf(message.from)
+            console.log(`${playerIdx + 1}: ${message.message}`)
+            return {Notification: `${playerIdx + 1}: ${message.message}`, type: "CHAT", _id: message._id}
+        } else if (message.type === "SYSTEM" && message.to === "ALL") {
+            let notification
+            const playerIdx = message.message === "none" ? "none" : room.players.indexOf(message.from)
+            if (message.subject === "DEAD_PLAYER") {
+                notification = `${playerIdx} has been killed during night!`
+            } else if (message.subject === "EJECTED_PLAYER") {
+                notification = `${playerIdx} has been voted out!`
+            }
+            return {Notification: notification, type: "SYSTEM", _id: message._id}
+        } else if (message.type === "SYSTEM" && message.to === identity.public.toString()) {
+            if (message.subject === "RoleAssignment") {
+                const roleInfo = await axios.get(`${API_URL}/rooms/${room._id}/getRole`, {playerId: identity.toString()})
+                const role = roleInfo.role
+                // console.log(data)
+                // const privKey = PrivateKey.fromString(identity.toString())
+                // const hexKey = await privKey.decrypt(Buffer.from(data.encryptedHexKey))
+                // console.log(Buffer.from(hexKey).toString())
+                // const role = PolyAES.withKey(Buffer.from(hexKey).toString()).decrypt(data.encryptedRole)
+                // console.log(role)
                 setPlayerToRole(playerToRole => {
                     playerToRole[identity.public.toString()] = role
                     return playerToRole
                 })
+                if(role === "MAFIA"){
+                    setThreads(threads => {
+                        threads.mafiaThread = roleInfo.mafiaThread
+                        return threads
+                    })
+                }
+                return {Notification: `Your role is ${role}`, type: "SYSTEM", _id: message._id}
             }
         }
-        fetch()
-    }, [getRole, identity, setPlayerToRole])
+    }, [setPlayerToRole, identity, setThreads, room])
+
+    const receiveMessage = useCallback(async (update) => {
+        console.log(update)
+        if (!update) {
+            // fetch();
+            return;
+        } // hack for undefined callback
+        if (update.collectionName !== "chat") return
+        if (update.action === "CREATE") {
+            if(messageIdExists.has(update.instance._id)) return
+            setMessageIdExists((mapping) => {
+                mapping.add(update.instance._id)
+                return mapping
+            })
+            const notification = await messageParser(update.instance)
+            setMessages((messages) => ([...messages, notification]))
+        }
+    }, [setMessages, setMessageIdExists, messageIdExists, messageParser])
 
     useEffect(() => {
         let subMessage
-        const receiveMessage = debounceByArgs((update) => {
-            console.log(update)
-            if (!update) {
-                // fetch();
-                return;
-            } // hack for undefined callback
-            if (update.collectionName !== "chat") return
-            if (update.action === "CREATE") {
-                setMessages((messages) => ([...messages, update.instance]))
-            }
-        }, 1500)
         const fetch = async () => {
             console.log("fetching")
             if (hub && hub.hasOwnProperty("client") && threads && threads.hasOwnProperty("villagerThread")) {
                 console.log("chats loading")
-                const initMessages = await hub.client.find(threads.villagerThread, 'chat', {})
+                const rawMessages = await hub.client.find(threads.villagerThread, 'chat', {})
+                const initMessages = await Promise.all(rawMessages.map(message => messageParser(message)))
                 setMessages(initMessages)
                 console.log(initMessages)
                 subMessage = await hub.client.listen(threads.villagerThread, [{
@@ -128,7 +141,7 @@ function GameChat({threads, players, setPlayerToRole}) {
                 subMessage.close()
             }
         }), 10000)
-    }, [hub, threads])
+    }, [hub, threads, messageParser, receiveMessage])
 
     return (
         <VStack spacing={2}>
@@ -144,8 +157,8 @@ function GameChat({threads, players, setPlayerToRole}) {
                 overflowY='scroll'
             >
                 {
-                    messages.map(message => (
-                        <Message key={message._id} players={players} message={message} setGetRole={setGetRole}/>
+                    messages.map(notification => (
+                        notification && <Message key={notification._id} notification={notification}/>
                     ))
                 }
             </Box>
