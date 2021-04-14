@@ -107,8 +107,10 @@ function Game() {
                         ))}
                     </SimpleGrid>
                     <GameChat
+                        room={room}
                         threads={threads}
-                        players={room && room.hasOwnProperty("players") ? room.players : []}
+                        setThreads={setThreads}
+                        // players={room && room.hasOwnProperty("players") ? room.players : []}
                         setPlayerToRole={setPlayersToRole}
                     />
                 </VStack>

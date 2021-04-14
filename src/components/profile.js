@@ -31,6 +31,7 @@ function Profile() {
                         onClick={onClick}
                         aria-label="copy"
                         icon={<FaCopy />}
+                        _focus={{}}
                         _hover={{
                             color: useColorModeValue('gray.600', 'gray.400'),
                         }}
