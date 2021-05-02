@@ -185,4 +185,4 @@ function GameChat({room, threads, setThreads, setPlayerToRole}) {
     )
 }
 
-export default GameChat
+export default GameChat;
